@@ -13,7 +13,9 @@ const app = express();
 app.engine('handlebars', exphbs());
 app.set('view engine', 'handlebars');
 
-app.use(bodyParser.urlencoded({ extended: false }))
+app.locals.layout = config.theme;
+
+app.use(bodyParser.urlencoded({extended: false}))
 app.use(bodyParser.json())
 
 // Server Start Notification
@@ -23,8 +25,23 @@ app.listen(3000, () => console.log("Server Started on port 3000..."));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // Get Index Page Request
-app.get ('/', (req, res) => {
-    res.render(config.theme);
+app.get('/', (req, response) => {
+    response.render('home', {title: "Contact Us"} );
+});
+
+app.get('/incidents', (req, response) => {
+    const axios = require('axios').default;
+
+    axios.get(config.serverUrl + 'incident-request')
+        .then(res => {
+            console.log(res.data)
+
+            response.render('incidents', {title: "Incidents", data: res.data});
+        })
+        .catch(error => {
+            console.error(error)
+            response.render('incidents', {title: "Incidents"});
+        })
 });
 
 // Post Email Request
@@ -45,7 +62,7 @@ app.post('/send', (req, response) => {
 
     axios
         .post(config.serverUrl + 'incident-request/save', {
-                name: req.body.name,
+            name: req.body.name,
             organization: req.body.organization,
             application: req.body.application,
             url: req.body.url,
@@ -67,10 +84,10 @@ app.post('/send', (req, response) => {
                         </button>
                 </div>
             `;
-            response.render(config.theme, {msg: successAlert});
+            response.render('home', {title: "Contact Us", msg: successAlert});
         })
         .catch(error => {
             console.error(error)
-            response.render(config.theme, {msg: failAlert});
+            response.render('home', {title: "Contact Us", msg: failAlert});
         })
 });
