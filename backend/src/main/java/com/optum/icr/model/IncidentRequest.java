@@ -31,6 +31,8 @@ public class IncidentRequest implements Serializable {
     private String errorCode;
     private String email;
     private String message;
+    private String status;
+    private String resolutionMessage;
 
     // Constructor, Getter and Setter
 }

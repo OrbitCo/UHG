@@ -2,6 +2,7 @@ package com.optum.icr.service.impl;
 
 import com.optum.icr.dto.IncidentMarkCompletedRequest;
 import com.optum.icr.model.IncidentRequest;
+import com.optum.icr.model.IncidentStatus;
 import com.optum.icr.repository.IncidentRequestRepository;
 import com.optum.icr.service.PublisherService;
 import com.optum.icr.repository.SequenceGeneratorRepository;
@@ -10,6 +11,7 @@ import com.optum.icr.service.MailService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class IncidentRequestServiceImpl implements IncidentRequestService {
@@ -45,6 +47,7 @@ public class IncidentRequestServiceImpl implements IncidentRequestService {
     @Override
     public IncidentRequest save(IncidentRequest incidentRequest) {
         incidentRequest.setIncidentNumber(sequenceGeneratorRepository.generateSequence(IncidentRequest.SEQUENCE_NAME));
+        incidentRequest.setStatus(IncidentStatus.NEW.toString());
         incidentRequest = repository.insert(incidentRequest);
         mailService.sendIncidentCreationEmail(incidentRequest);
         return incidentRequest;
@@ -62,7 +65,14 @@ public class IncidentRequestServiceImpl implements IncidentRequestService {
 
     @Override
     public IncidentRequest markCompleted(IncidentMarkCompletedRequest incidentMarkCompletedRequest) {
+        Optional<IncidentRequest> incidentRequestOptional = repository.findById(incidentMarkCompletedRequest.getIncidentRequestId());
+        if(!incidentRequestOptional.isPresent())
+            return null;
+        IncidentRequest incidentRequest = incidentRequestOptional.get();
+        incidentRequest.setStatus(IncidentStatus.COMPLETED.toString());
+        incidentRequest.setResolutionMessage(incidentMarkCompletedRequest.getMessage());
+        incidentRequest = update(incidentRequest);
         publisherService.publish(incidentMarkCompletedRequest);
-        return null;
+        return incidentRequest;
     }
 }

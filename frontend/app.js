@@ -44,7 +44,43 @@ app.get('/incidents', (req, response) => {
         })
 });
 
-// Post Email Request
+app.get('/incident/:id', (req, response) => {
+    const axios = require('axios').default;
+
+    let id = req.params.id;
+
+    axios.get(config.serverUrl + 'incident-request/' + id)
+        .then(res => {
+            console.log(res.data)
+
+            response.render('incident', {title: "Incident " + res.data.incidentNumber, data: res.data, completed: res.data.status === 'COMPLETED'});
+        })
+        .catch(error => {
+            console.error(error)
+            response.render('incident', {title: "Invalid Incident"});
+        })
+});
+
+
+// Resolve incident
+app.post('/incident/:id', (req, response) => {
+    const axios = require('axios').default;
+
+    axios
+        .post(config.serverUrl + 'incident-request/markCompleted', {
+            incidentRequestId: req.params.id,
+            message: req.body.message
+        })
+        .then(res => {
+            response.render('incident', {title: "Incident " + res.data.incidentNumber, data: res.data, completed: res.data.status === 'COMPLETED'});
+        })
+        .catch(error => {
+            console.error(error)
+            response.render('incident', {title: "Invalid Incident"});
+        })
+});
+
+// Save incident
 app.post('/send', (req, response) => {
     // Alert if failed to sending email
     const failAlert = `

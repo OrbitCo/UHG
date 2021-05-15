@@ -18,17 +18,19 @@
                 <th scope="col">Application</th>
                 <th scope="col">Api</th>
                 <th scope="col">Error Code</th>
+                <th scope="col">Status</th>
             </tr>
             </thead>
             <tbody>
             {{#each data}}
                 <tr>
-                    <td>{{this.incidentNumber}}</td>
+                    <td><a href="/incident/{{this.id}}">{{this.incidentNumber}}</a></td>
                     <td>{{this.name}}</td>
                     <td>{{this.email}}</td>
                     <td>{{this.application}}</td>
                     <td>{{this.api}}</td>
                     <td>{{this.errorCode}}</td>
+                    <td>{{this.status}}</td>
                 </tr>
             {{/each}}
             </tbody>
